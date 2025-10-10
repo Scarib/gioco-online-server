@@ -10,9 +10,9 @@ app.use(bodyParser.json());
 let users = {};
 let leaderboard = [];
 
-// route di test (per evitare "Impossibile OTTENERE /")
+// rotta di test (homepage)
 app.get("/", (req, res) => {
-  res.send("✅ Server online e funzionante!");
+  res.send("Il server è attivo 🚀");
 });
 
 // registrazione
