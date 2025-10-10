@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Gioco Online con Login</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+</head>
+<body>
+<h2>Login al Gioco</h2>
+<input id="username" placeholder="Username"><br>
+<input id="password" type="password" placeholder="Password"><br>
+<button onclick="register()">Registrati</button>
+<button onclick="login()">Login</button>
+<div id="status"></div>
+
+<h3 id="welcome"></h3>
+<div id="leaderboard"></div>
+<script>
+let token = null;
+let score = 0;
+
+// Registrazione
+async function register() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const res = await fetch("http://localhost:3000/api/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
+  if (res.ok) document.getElementById("status").innerText = "Registrato!";
+  else document.getElementById("status").innerText = "Errore registrazione";
+}
+
+// Login
+async function login() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const res = await fetch("http://localhost:3000/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    token = data.token;
+    score = data.points || 0;
+    document.getElementById("status").innerText = "Login OK!";
+    document.getElementById("welcome").innerText = "Benvenuto " + username;
+    startGame();
+  } else {
+    document.getElementById("status").innerText = "Login fallito";
+  }
+}
+
+// Avvio gioco
+function startGame() {
+  const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: { default: "arcade", arcade: { gravity: { y: 0 } } },
+    scene: { preload, create, update }
+  };
+  new Phaser.Game(config);
+}
+
+let player, cursors;
+
+function preload() {
+  this.load.image("player", "https://labs.phaser.io/assets/sprites/phaser-dude.png");
+}
+
+function create() {
+  player = this.physics.add.sprite(400, 300, "player");
+  cursors = this.input.keyboard.createCursorKeys();
+}
+
+function update() {
+  if (!token) return;
+  player.setVelocity(0);
+  if (cursors.left.isDown) player.setVelocityX(-200);
+  if (cursors.right.isDown) player.setVelocityX(200);
+  if (cursors.up.isDown) player.setVelocityY(-200);
+  if (cursors.down.isDown) player.setVelocityY(200);
+
+  score++;
+  localStorage.setItem("my_score", score);
+
+  if (Math.floor(Date.now() / 5000) % 2 === 0) {
+    sendScore(score);
+  }
+}
+
+// Invio punteggio al server
+async function sendScore(points) {
+  await fetch("http://localhost:3000/api/score", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+    body: JSON.stringify({ points })
+  });
+  loadLeaderboard();
+}
+
+// Classifica
+async function loadLeaderboard() {
+  const res = await fetch("http://localhost:3000/api/leaderboard");
+  const data = await res.json();
+  document.getElementById("leaderboard").innerHTML =
+    "<h3>Classifica</h3>" +
+    data.map((p, i) => `${i+1}. ${p.username} - ${p.points}`).join("<br>");
+}
+</script>
+</body>
+</html>
