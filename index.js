@@ -10,9 +10,9 @@ app.use(bodyParser.json());
 let users = {};
 let leaderboard = [];
 
-// rotta di test (homepage)
+// ✅ route di test per la home
 app.get("/", (req, res) => {
-  res.send("Il server è attivo 🚀");
+  res.send("Server attivo! 🚀 Usa /register, /login, /score o /leaderboard");
 });
 
 // registrazione
@@ -63,3 +63,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server attivo su porta ${PORT}`);
 });
+
+
+
