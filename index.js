@@ -10,9 +10,9 @@ app.use(bodyParser.json());
 let users = {};
 let leaderboard = [];
 
-// 👋 Rotta principale per test (Render la mostra quando apri /)
+// Rotta principale (homepage)
 app.get("/", (req, res) => {
-  res.send("✅ Server del gioco online attivo e funzionante!");
+  res.send("✅ Server attivo! Usa /register, /login, /score o /leaderboard");
 });
 
 // Registrazione
@@ -44,7 +44,6 @@ app.post("/score", (req, res) => {
   }
   users[username].score = score;
 
-  // Aggiorna classifica
   leaderboard = leaderboard.map((u) =>
     u.username === username ? { username, score } : u
   );
@@ -58,11 +57,12 @@ app.get("/leaderboard", (req, res) => {
   res.json(leaderboard);
 });
 
-// Porta automatica per Render
+// Porta automatica (Render la imposta in automatico)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server attivo su porta ${PORT}`);
+  console.log(`🚀 Server avviato su porta ${PORT}`);
 });
+
 
 
 
